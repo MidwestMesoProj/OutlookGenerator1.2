@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPC Outlook Generator</title>
+    <style>
+        :root {
+            --navy-950: #07111f;
+            --navy-900: #0b1728;
+            --navy-800: #102239;
+            --panel: rgba(15, 31, 51, 0.86);
+            --panel-strong: rgba(10, 23, 39, 0.96);
+            --line: rgba(160, 190, 220, 0.16);
+            --muted: #91a4b8;
+            --text: #eef5fb;
+            --accent: #55b8ff;
+            --accent-2: #8b7cff;
+            --danger: #e04a5a;
+            --shadow: 0 20px 55px rgba(0,0,0,.35);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background:
+                radial-gradient(circle at 20% 10%, rgba(55, 115, 180, .18), transparent 32%),
+                radial-gradient(circle at 85% 85%, rgba(118, 77, 190, .16), transparent 30%),
+                var(--navy-950);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 310px;
+            background:
+                linear-gradient(180deg, rgba(16, 34, 57, .98), rgba(7, 17, 31, .98));
+            color: var(--text);
+            padding: 18px 16px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            border-right: 1px solid var(--line);
+            box-shadow: 18px 0 55px rgba(0,0,0,.22);
+            overflow-y: auto;
+            flex-shrink: 0;
+            z-index: 5;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 4px 6px 16px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .brand-mark {
+            width: 42px;
+            height: 42px;
+            border-radius: 13px;
+            display: grid;
+            place-items: center;
+            font-size: 20px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            box-shadow: 0 8px 25px rgba(75, 155, 255, .25);
+        }
+
+        .brand h1 {
+            font-size: 1rem;
+            line-height: 1.1;
+            margin: 0;
+            letter-spacing: -.02em;
+        }
+
+        .brand p {
+            color: var(--muted);
+            margin: 4px 0 0;
+            font-size: .72rem;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+        }
+
+        .section-title {
+            font-size: .68rem;
+            text-transform: uppercase;
+            color: #8298ad;
+            letter-spacing: .14em;
+            margin: 12px 4px 3px;
+            font-weight: 800;
+        }
+
+        .risk-stack, .tool-stack, .file-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        button {
+            padding: 10px 12px;
+            border: 1px solid transparent;
+            border-radius: 9px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: transform .18s ease, filter .18s ease, border-color .18s ease, box-shadow .18s ease;
+            text-align: left;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: .82rem;
+        }
+
+        button:hover {
+            filter: brightness(1.08);
+            transform: translateY(-1px);
+        }
+
+        .risk-btn {
+            margin-bottom: 0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 5px 12px rgba(0,0,0,.12);
+        }
+
+        .risk-btn::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(255,255,255,.14), transparent 50%);
+            pointer-events: none;
+        }
+
+        .risk-btn.active {
+            box-shadow: 0 0 0 2px #fff, 0 8px 20px rgba(0,0,0,.25);
+            transform: translateX(4px);
+            z-index: 10;
+        }
+
+        .btn-tstm { background-color: #c1e9c1; color: #2f492f; }
+        .btn-mrgl { background-color: #76c043; color: white; text-shadow: 0 .5px .5px rgba(0,0,0,.3); }
+        .btn-slgt { background-color: #ffeb3b; color: #333; }
+        .btn-enh  { background-color: #e69f00; color: white; text-shadow: 0 1px 1px rgba(0,0,0,.3); }
+        .btn-mdt  { background-color: #e60000; color: white; text-shadow: 0 1px 1px rgba(0,0,0,.3); }
+        .btn-high { background-color: #ff00ff; color: white; text-shadow: 0 1px 1px rgba(0,0,0,.3); }
+
+        .tool-btn {
+            background: rgba(255,255,255,.045);
+            color: #dce8f2;
+            border-color: var(--line);
+            margin-bottom: 0;
+            justify-content: flex-start;
+        }
+
+        .tool-btn:hover { background: rgba(85,184,255,.12); border-color: rgba(85,184,255,.4); }
+
+        .tool-btn.active-tool {
+            background: linear-gradient(90deg, rgba(52,152,219,.3), rgba(52,152,219,.08));
+            border-color: rgba(85,184,255,.65);
+            box-shadow: inset 3px 0 0 var(--accent);
+        }
+
+        .tool-btn.active-tool-white {
+            background: rgba(255,255,255,.95);
+            color: #152235;
+            border-color: #fff;
+            box-shadow: 0 0 18px rgba(255,255,255,.2);
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #21b86b, #158c52);
+            color: white;
+            justify-content: center;
+            margin-top: 0;
+            border: 1px solid rgba(255,255,255,.15);
+            box-shadow: 0 8px 20px rgba(21,140,82,.18);
+        }
+
+        .danger-btn { background: linear-gradient(135deg, #d64554, #9d2634) !important; }
+
+        .sidebar-footer {
+            margin-top: auto;
+            color: #71869a;
+            font-size: .7rem;
+            padding: 12px 5px 0;
+            border-top: 1px solid var(--line);
+        }
+
+        .file-input { display: none; }
+
+        .main-content {
+            flex-grow: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background:
+                radial-gradient(circle at 50% 42%, rgba(48, 85, 120, .22), transparent 45%),
+                #091523;
+            padding: 78px 28px 28px;
+        }
+
+        .workspace-toolbar {
+            position: absolute;
+            top: 18px;
+            left: 24px;
+            right: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            z-index: 2;
+        }
+
+        .workspace-title {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .workspace-title strong {
+            font-size: 1rem;
+            letter-spacing: -.02em;
+        }
+
+        .workspace-title span {
+            font-size: .72rem;
+            color: var(--muted);
+        }
+
+        .workspace-chips {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .chip {
+            border: 1px solid var(--line);
+            background: rgba(255,255,255,.045);
+            color: #b9cad9;
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: .68rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        #canvas-wrapper {
+            box-shadow: var(--shadow), 0 0 0 1px rgba(255,255,255,.1);
+            border: 5px solid rgba(255,255,255,.92);
+            border-radius: 12px;
+            background-color: white;
+            overflow: hidden;
+            max-width: 100%;
+            max-height: 100%;
+            display: flex;
+            position: relative;
+        }
+
+        #canvas-wrapper::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            border: 1px solid rgba(0,0,0,.15);
+            border-radius: 7px;
+        }
+
+        canvas {
+            display: block;
+            cursor: crosshair;
+            max-width: 100%;
+            max-height: calc(100vh - 150px);
+        }
+
+        canvas.edit-mode { cursor: default; }
+
+        .status-bar {
+            position: absolute;
+            bottom: 14px;
+            left: 24px;
+            right: 24px;
+            width: auto;
+            background: rgba(4, 12, 22, .78);
+            border: 1px solid var(--line);
+            backdrop-filter: blur(12px);
+            color: #d8e7f3;
+            padding: 9px 13px;
+            border-radius: 9px;
+            text-align: left;
+            font-size: .76rem;
+            pointer-events: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,.2);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.65);
+            backdrop-filter: blur(8px);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: linear-gradient(180deg, #14263b, #0b1728);
+            color: var(--text);
+            padding: 22px;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            width: min(390px, 100%);
+            box-shadow: 0 25px 70px rgba(0,0,0,.5);
+        }
+
+        .modal-content h3 {
+            margin: 0 0 4px;
+            font-size: 1.15rem;
+        }
+
+        .modal-subtitle {
+            margin: 0 0 16px;
+            color: var(--muted);
+            font-size: .78rem;
+        }
+
+        .modal-content label {
+            display: block;
+            margin: 13px 0 6px;
+            font-size: .78rem;
+            color: #b9cad9;
+            font-weight: 700;
+        }
+
+        .modal-content input[type="text"] {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px 11px;
+            background: rgba(255,255,255,.06);
+            color: white;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            outline: none;
+        }
+
+        .modal-content input[type="text"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(85,184,255,.12);
+        }
+
+        .color-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .color-row input[type="color"] {
+            width: 54px;
+            height: 38px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: transparent;
+            padding: 2px;
+        }
+
+        .darkness-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .darkness-row input[type="range"] {
+            flex: 1;
+            accent-color: var(--accent);
+        }
+
+        .darkness-value {
+            min-width: 48px;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+            color: #dce8f2;
+            font-size: .8rem;
+        }
+
+        .check-row {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin-top: 14px;
+            padding: 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: rgba(255,255,255,.035);
+        }
+
+        .check-row label {
+            margin: 0;
+            color: #dce8f2;
+        }
+
+        .check-row input { accent-color: var(--accent); }
+
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .modal-actions button { justify-content: center; }
+
+        @media (max-width: 850px) {
+            body { flex-direction: column; overflow: auto; min-height: 100vh; }
+            .sidebar { width: 100%; max-height: none; padding: 12px; }
+            .risk-stack { display: grid; grid-template-columns: repeat(3, 1fr); }
+            .tool-stack, .file-stack { display: grid; grid-template-columns: repeat(2, 1fr); }
+            .sidebar-footer { display: none; }
+            .main-content { min-height: 70vh; padding: 76px 10px 58px; }
+            .workspace-toolbar { left: 12px; right: 12px; top: 12px; }
+            .workspace-chips { display: none; }
+            .status-bar { left: 12px; right: 12px; bottom: 10px; }
+            canvas { max-height: 68vh; }
+        }
+
+        @media (max-width: 520px) {
+            .risk-stack { grid-template-columns: repeat(2, 1fr); }
+            .tool-stack, .file-stack { grid-template-columns: 1fr; }
+            .brand { padding-bottom: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="brand">
+            <div class="brand-mark">⛈</div>
+            <div>
+                <h1>SPC Outlook Studio</h1>
+                <p>Forecast polygon designer</p>
+            </div>
+        </div>
+
+        <div class="section-title">Risk Categories</div>
+        <div class="risk-stack">
+            <button class="risk-btn btn-tstm" onclick="setRisk('TSTM')"><span>GEN TSTM</span> <span>0</span></button>
+            <button class="risk-btn btn-mrgl" onclick="setRisk('MRGL')"><span>1-MRGL</span> <span>1</span></button>
+            <button class="risk-btn btn-slgt" onclick="setRisk('SLGT')"><span>2-SLGT</span> <span>2</span></button>
+            <button class="risk-btn btn-enh" onclick="setRisk('ENH')"><span>3-ENH</span> <span>3</span></button>
+            <button class="risk-btn btn-mdt" onclick="setRisk('MDT')"><span>4-MDT</span> <span>4</span></button>
+            <button class="risk-btn btn-high" onclick="setRisk('HIGH')"><span>5-HIGH</span> <span>5</span></button>
+        </div>
+        <div class="tool-stack">
+            <button class="tool-btn" onclick="openCustomRiskDialog()">⚙ Config Custom Draw</button>
+        </div>
+
+        <div class="section-title">Drawing Tools</div>
+        <div class="tool-stack">
+            <button class="tool-btn" id="btn-auto-buffer" onclick="toggleAutoBuffer()">🔗 Auto-Buffer (OFF)</button>
+            <button class="tool-btn" id="btn-hatching" onclick="toggleHatching()">▤ CIG Hatching (OFF)</button>
+            <button class="tool-btn" id="btn-edit" onclick="toggleEditMode()">🔧 Edit Polygons</button>
+            <button class="tool-btn" onclick="undoLastPoint()">↩ Undo Point</button>
+            <button class="tool-btn" onclick="undoLastShape()">🔙 Undo Shape</button>
+            <button class="tool-btn danger-btn" onclick="clearAll()">🗑️ Clear All</button>
+        </div>
+
+        <div class="section-title">File</div>
+        <div class="file-stack">
+            <button class="tool-btn" onclick="document.getElementById('mapUpload').click()">📂 Upload Map</button>
+            <input type="file" id="mapUpload" class="file-input" accept="image/*" onchange="handleImageUpload(this)">
+            <button class="action-btn" onclick="downloadImage()">💾 Save Outlook PNG</button>
+        </div>
+
+        <div class="sidebar-footer">SPC-inspired visualization tools · Draw with clicks, finish with double-click or right-click.</div>
+    </div>
+
+    <div class="main-content">
+        <div class="workspace-toolbar">
+            <div class="workspace-title">
+                <strong>Outlook canvas</strong>
+                <span>Build and refine your forecast areas</span>
+            </div>
+            <div class="workspace-chips">
+                <span class="chip">● Vector polygons</span>
+                <span class="chip">▤ CIG hatch overlay</span>
+                <span class="chip">↗ PNG export</span>
+            </div>
+        </div>
+        <div id="canvas-wrapper">
+            <canvas id="outlookCanvas"></canvas>
+        </div>
+        <div class="status-bar" id="status-text">Ready</div>
+    </div>
+
+    <div class="modal" id="customRiskModal">
+        <div class="modal-content">
+            <h3>Config Custom Draw</h3>
+            <p class="modal-subtitle">Tune the label and SPC-style visual treatment for the next polygon.</p>
+
+            <label for="customRiskText">Level text</label>
+            <input id="customRiskText" type="text" placeholder="e.g. TSTM, SLGT">
+
+            <label for="customRiskColor">Fill color</label>
+            <div class="color-row">
+                <input id="customRiskColor" type="color" value="#76c043">
+                <span id="customColorPreview" class="chip">Custom fill</span>
+            </div>
+
+            <label for="customTextDarkness">Text darkness</label>
+            <div class="darkness-row">
+                <input id="customTextDarkness" type="range" min="0" max="100" value="70">
+                <span id="customTextDarknessValue" class="darkness-value">70%</span>
+            </div>
+
+            <div class="check-row">
+                <input id="customRiskHatching" type="checkbox">
+                <label for="customRiskHatching">Use CIG/SPC-style hatching</label>
+            </div>
+
+            <div class="modal-actions">
+                <button class="action-btn" onclick="applyCustomRisk()">Apply</button>
+                <button class="tool-btn" onclick="closeCustomRiskDialog()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('outlookCanvas');
+        const ctx = canvas.getContext('2d');
+        const statusText = document.getElementById('status-text');
+        const customRiskModal = document.getElementById('customRiskModal');
+        const customRiskText = document.getElementById('customRiskText');
+        const customRiskColor = document.getElementById('customRiskColor');
+        const customTextDarkness = document.getElementById('customTextDarkness');
+        const customTextDarknessValue = document.getElementById('customTextDarknessValue');
+        const customRiskHatching = document.getElementById('customRiskHatching');
+        const customColorPreview = document.getElementById('customColorPreview');
+
+        const STROKE_WIDTH = 2;
+        const HANDLE_RADIUS = 6;
+        const LABEL_HANDLE_RADIUS = 4;
+        const HIGHLIGHT_COLOR = '#3498db';
+        const EDGE_TOLERANCE = 10;
+        const EDGE_TOLERANCE_SQ = EDGE_TOLERANCE * EDGE_TOLERANCE;
+
+        const ALL_RISKS_CONFIG = [
+            { type: 'HIGH', priority: 5, color: '#ff00ff', darkColor: '#a800a8', btnClass: 'btn-high' },
+            { type: 'MDT', priority: 4, color: '#e60000', darkColor: '#990000', btnClass: 'btn-mdt' },
+            { type: 'ENH', priority: 3, color: '#e69f00', darkColor: '#996600', btnClass: 'btn-enh' },
+            { type: 'SLGT', priority: 2, color: '#ffeb3b', darkColor: '#a87800', btnClass: 'btn-slgt' },
+            { type: 'MRGL', priority: 1, color: '#76c043', darkColor: '#447027', btnClass: 'btn-mrgl' },
+            { type: 'TSTM', priority: 0, color: '#c1e9c1', darkColor: '#1a3d1a', btnClass: 'btn-tstm' }
+        ];
+
+        const RISK_LOOKUP = {};
+        ALL_RISKS_CONFIG.forEach(r => RISK_LOOKUP[r.type] = r);
+
+        const SCALE_INCREMENT = 0.40;
+        const riskCanvas = document.createElement('canvas');
+        const riskCtx = riskCanvas.getContext('2d');
+
+        let appState = {
+            mode: 'draw',
+            backgroundImage: new Image(),
+            shapes: [],
+            currentPoints: [],
+            currentRisk: { ...RISK_LOOKUP['SLGT'] },
+            drag: { isDragging: false, shapeIndex: -1, pointIndex: -1, isLabelDrag: false },
+            isAutoBufferEnabled: false,
+            isHatchingEnabled: false,
+            selectedShapeIndex: -1
+        };
+
+        window.onload = function() {
+            const embeddedImageSrc = 'file:///Users/stndelphia1/Desktop/blampam.png';
+
+            appState.backgroundImage.crossOrigin = "Anonymous";
+            appState.backgroundImage.src = embeddedImageSrc;
+
+            appState.backgroundImage.onload = function() {
+                resizeCanvasToImage();
+                draw();
+                updateStatus("Base map loaded. Select a risk to draw.");
+            };
+
+            appState.backgroundImage.onerror = function() {
+                updateStatus("Default map failed to load. Please use 'Upload Map'.");
+                canvas.width = 1600;
+                canvas.height = 1200;
+                riskCanvas.width = 1600;
+                riskCanvas.height = 1200;
+                draw();
+            };
+
+            highlightRiskBtn('SLGT');
+            updateAutoBufferButton();
+            updateHatchingButton();
+            setMode('draw');
+        };
+
+        function resizeCanvasToImage() {
+            if (appState.backgroundImage.complete && appState.backgroundImage.naturalWidth > 0) {
+                canvas.width = appState.backgroundImage.naturalWidth;
+                canvas.height = appState.backgroundImage.naturalHeight;
+                riskCanvas.width = canvas.width;
+                riskCanvas.height = canvas.height;
+            }
+        }
+
+        function setRisk(type) {
+            appState.currentRisk = { ...RISK_LOOKUP[type], hatched: appState.isHatchingEnabled };
+            highlightRiskBtn(type);
+            updateStatus(`Drawing Risk: ${appState.currentRisk.type}`);
+            setMode('draw');
+        }
+
+        function openCustomRiskDialog() {
+            customRiskText.value = appState.currentRisk.type || 'CUSTOM';
+            customRiskColor.value = appState.currentRisk.color || '#76c043';
+            customTextDarkness.value = appState.currentRisk.textDarkness ?? 70;
+            customTextDarknessValue.textContent = `${customTextDarkness.value}%`;
+            customRiskHatching.checked = !!appState.currentRisk.hatched;
+            updateCustomColorPreview();
+            customRiskModal.style.display = 'flex';
+        }
+
+        function updateCustomColorPreview() {
+            customColorPreview.style.background = customRiskColor.value;
+            customColorPreview.style.color = getDarkColor(customRiskColor.value, 70);
+            customColorPreview.textContent = 'Fill preview';
+        }
+
+        customTextDarkness.addEventListener('input', () => {
+            customTextDarknessValue.textContent = `${customTextDarkness.value}%`;
+        });
+        customRiskColor.addEventListener('input', updateCustomColorPreview);
+
+        function closeCustomRiskDialog() {
+            customRiskModal.style.display = 'none';
+        }
+
+        function applyCustomRisk() {
+            const type = (customRiskText.value || 'CUSTOM').trim().toUpperCase();
+            const color = customRiskColor.value || '#76c043';
+            const textDarkness = Number(customTextDarkness.value);
+            appState.currentRisk = {
+                type,
+                priority: 0,
+                color,
+                textDarkness,
+                darkColor: getDarkColor(color, textDarkness),
+                hatched: customRiskHatching.checked,
+                btnClass: ''
+            };
+            appState.isHatchingEnabled = customRiskHatching.checked;
+            updateHatchingButton();
+            highlightRiskBtn(null);
+            closeCustomRiskDialog();
+            setMode('draw');
+            updateStatus(`Custom draw set: ${type} · text darkness ${textDarkness}%`);
+        }
+
+        function getDarkColor(hex, darkness) {
+            const value = hex.replace('#', '');
+            const r = parseInt(value.substring(0, 2), 16);
+            const g = parseInt(value.substring(2, 4), 16);
+            const b = parseInt(value.substring(4, 6), 16);
+            const factor = Math.max(0, Math.min(1, 1 - (darkness / 100)));
+            return `rgb(${Math.round(r * factor)}, ${Math.round(g * factor)}, ${Math.round(b * factor)})`;
+        }
+
+        function toggleHatching() {
+            appState.isHatchingEnabled = !appState.isHatchingEnabled;
+            appState.currentRisk.hatched = appState.isHatchingEnabled;
+            updateHatchingButton();
+            updateStatus(`CIG hatching ${appState.isHatchingEnabled ? 'enabled' : 'disabled'} for new polygons.`);
+            draw();
+        }
+
+        function updateHatchingButton() {
+            const btn = document.getElementById('btn-hatching');
+            btn.classList.toggle('active-tool-white', appState.isHatchingEnabled);
+            btn.textContent = appState.isHatchingEnabled ? '▤ CIG Hatching (ON)' : '▤ CIG Hatching (OFF)';
+        }
+
+        function setMode(mode) {
+            if (mode !== 'edit') deselectShape();
+            appState.mode = mode;
+
+            if (mode === 'edit') {
+                canvas.classList.add('edit-mode');
+                document.getElementById('btn-edit').classList.add('active-tool');
+                appState.currentPoints = [];
+                updateStatus("Edit Mode: Click a polygon to select it for editing.");
+            } else {
+                canvas.classList.remove('edit-mode');
+                document.getElementById('btn-edit').classList.remove('active-tool');
+                updateStatus(`Draw Mode: ${appState.currentRisk.type}`);
+            }
+            draw();
+        }
+
+        function toggleAutoBuffer() {
+            appState.isAutoBufferEnabled = !appState.isAutoBufferEnabled;
+            updateAutoBufferButton();
+            updateStatus(`Auto-Buffer set to ${appState.isAutoBufferEnabled ? 'ON' : 'OFF'}.`);
+        }
+
+        function updateAutoBufferButton() {
+            const btn = document.getElementById('btn-auto-buffer');
+            btn.classList.toggle('active-tool-white', appState.isAutoBufferEnabled);
+            btn.textContent = appState.isAutoBufferEnabled ? '🔗 Auto-Buffer (ON)' : '🔗 Auto-Buffer (OFF)';
+        }
+
+        function toggleEditMode() {
+            setMode(appState.mode === 'edit' ? 'draw' : 'edit');
+        }
+
+        function deselectShape() {
+            appState.selectedShapeIndex = -1;
+            appState.drag.isDragging = false;
+            appState.drag.shapeIndex = -1;
+            appState.drag.pointIndex = -1;
+            appState.drag.isLabelDrag = false;
+        }
+
+        function distSq(p1, p2) {
+            return (p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2;
+        }
+
+        function distToSegmentSq(p, a, b) {
+            const l2 = distSq(a, b);
+            if (l2 === 0) return distSq(p, a);
+            let t = ((p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y)) / l2;
+            t = Math.max(0, Math.min(1, t));
+            const projection = { x: a.x + t * (b.x - a.x), y: a.y + t * (b.y - a.y) };
+            return distSq(p, projection);
+        }
+
+        function insertPointIfNearEdge(shape, x, y) {
+            const points = shape.points;
+            if (points.length < 2) return -1;
+            const clickPoint = { x, y };
+
+            for (let i = 0; i < points.length; i++) {
+                const p1 = points[i];
+                const p2 = points[(i + 1) % points.length];
+                if (distToSegmentSq(clickPoint, p1, p2) <= EDGE_TOLERANCE_SQ) {
+                    points.splice(i + 1, 0, clickPoint);
+                    return i + 1;
+                }
+            }
+            return -1;
+        }
+
+        function getCentroid(points) {
+            if (!points.length) return { x: 0, y: 0 };
+            let cx = 0, cy = 0;
+            points.forEach(p => { cx += p.x; cy += p.y; });
+            return { x: cx / points.length, y: cy / points.length };
+        }
+
+        function scalePolygon(points, scaleFactor) {
+            if (points.length < 3) return [];
+            const centroid = getCentroid(points);
+            return points.map(p => ({
+                x: centroid.x + ((p.x - centroid.x) * scaleFactor),
+                y: centroid.y + ((p.y - centroid.y) * scaleFactor)
+            }));
+        }
+
+        function drawPolygonPath(pts, targetCtx) {
+            if (pts.length < 2) return;
+            targetCtx.beginPath();
+            targetCtx.moveTo(pts[0].x, pts[0].y);
+            for (let i = 1; i < pts.length; i++) targetCtx.lineTo(pts[i].x, pts[i].y);
+            targetCtx.closePath();
+        }
+
+        function drawHatching(points, color, targetCtx) {
+            if (points.length < 3) return;
+
+            targetCtx.save();
+            drawPolygonPath(points, targetCtx);
+            targetCtx.clip();
+
+            const bounds = points.reduce((acc, p) => ({
+                minX: Math.min(acc.minX, p.x),
+                minY: Math.min(acc.minY, p.y),
+                maxX: Math.max(acc.maxX, p.x),
+                maxY: Math.max(acc.maxY, p.y)
+            }), { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity });
+
+            const spacing = 12;
+            const span = (bounds.maxX - bounds.minX) + (bounds.maxY - bounds.minY);
+            targetCtx.strokeStyle = color;
+            targetCtx.globalAlpha = 0.68;
+            targetCtx.lineWidth = 1.35;
+            targetCtx.lineCap = 'butt';
+
+            for (let offset = -span; offset <= span; offset += spacing) {
+                targetCtx.beginPath();
+                targetCtx.moveTo(bounds.minX + offset, bounds.maxY);
+                targetCtx.lineTo(bounds.minX + offset + span, bounds.minY);
+                targetCtx.stroke();
+            }
+
+            targetCtx.restore();
+        }
+
+        function drawIndividualLabel(shape) {
+            const centroid = getCentroid(shape.points);
+            const offsetX = shape.labelOffset?.x || 0;
+            const offsetY = shape.labelOffset?.y || 0;
+            ctx.font = "12pt Courier New, Courier, monospace";
+            ctx.textAlign = "right";
+            ctx.textBaseline = "top";
+            ctx.fillStyle = shape.darkColor;
+            ctx.fillText(shape.type, centroid.x + offsetX, centroid.y + offsetY);
+        }
+
+        function drawArrowHead(fromX, fromY, toX, toY, color, targetCtx) {
+            const headLength = 10;
+            const angle = Math.atan2(toY - fromY, toX - fromX);
+            const angle1 = angle + Math.PI / 4;
+            const angle2 = angle - Math.PI / 4;
+            const x1 = toX - headLength * Math.cos(angle1);
+            const y1 = toY - headLength * Math.sin(angle1);
+            const x2 = toX - headLength * Math.cos(angle2);
+            const y2 = toY - headLength * Math.sin(angle2);
+            targetCtx.save();
+            targetCtx.lineWidth = STROKE_WIDTH;
+            targetCtx.strokeStyle = color;
+            targetCtx.lineCap = 'round';
+            targetCtx.beginPath();
+            targetCtx.moveTo(x1, y1);
+            targetCtx.lineTo(toX, toY);
+            targetCtx.lineTo(x2, y2);
+            targetCtx.stroke();
+            targetCtx.restore();
+        }
+
+        function drawArrowOnPolygon(points, color, targetCtx) {
+            if (points.length < 3) return;
+            const p0 = points[0];
+            const p1 = points[1];
+            const dx = p1.x - p0.x;
+            const dy = p1.y - p0.y;
+            const length = Math.hypot(dx, dy);
+            const halfStemLength = 5;
+            if (length < halfStemLength * 2) return;
+            const ux = dx / length;
+            const uy = dy / length;
+            const mx = (p0.x + p1.x) / 2;
+            const my = (p0.y + p1.y) / 2;
+            drawArrowHead(mx - ux * halfStemLength, my - uy * halfStemLength, mx, my, color, targetCtx);
+        }
+
+        function draw(mouseX, mouseY) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (appState.backgroundImage.complete && appState.backgroundImage.naturalWidth > 0) {
+                ctx.drawImage(appState.backgroundImage, 0, 0);
+            } else {
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+
+            riskCtx.clearRect(0, 0, riskCanvas.width, riskCanvas.height);
+            const sortedShapes = [...appState.shapes].sort((a, b) => a.priority - b.priority);
+
+            sortedShapes.forEach(shape => {
+                const pts = shape.points;
+                riskCtx.save();
+                riskCtx.globalCompositeOperation = 'destination-out';
+                drawPolygonPath(pts, riskCtx);
+                riskCtx.fillStyle = 'black';
+                riskCtx.fill();
+                riskCtx.lineWidth = STROKE_WIDTH;
+                riskCtx.strokeStyle = 'black';
+                riskCtx.stroke();
+                riskCtx.restore();
+
+                riskCtx.globalCompositeOperation = 'source-over';
+                drawPolygonPath(pts, riskCtx);
+                riskCtx.fillStyle = shape.color;
+                riskCtx.globalAlpha = 0.6;
+                riskCtx.fill();
+                riskCtx.globalAlpha = 1.0;
+                drawPolygonPath(pts, riskCtx);
+                riskCtx.lineWidth = STROKE_WIDTH;
+                riskCtx.strokeStyle = shape.darkColor;
+                riskCtx.stroke();
+                if (shape.hatched && pts.length >= 3) {
+                    drawHatching(pts, shape.darkColor, riskCtx);
+                }
+                if (pts.length >= 3) drawArrowOnPolygon(pts, shape.darkColor, riskCtx);
+            });
+
+            ctx.drawImage(riskCanvas, 0, 0);
+
+            if (appState.mode === 'edit' && appState.selectedShapeIndex !== -1) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+
+            sortedShapes.forEach(drawIndividualLabel);
+
+            if (appState.mode === 'edit') {
+                const shapesToDrawHandles = appState.selectedShapeIndex !== -1
+                    ? [appState.shapes[appState.selectedShapeIndex]]
+                    : appState.shapes;
+
+                shapesToDrawHandles.forEach(shape => {
+                    const isSelected = appState.selectedShapeIndex !== -1 && shape === appState.shapes[appState.selectedShapeIndex];
+                    ctx.fillStyle = isSelected ? HIGHLIGHT_COLOR : 'white';
+                    ctx.strokeStyle = '#333';
+                    ctx.lineWidth = 0.5;
+
+                    shape.points.forEach(p => {
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, HANDLE_RADIUS, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+                    });
+
+                    const centroid = getCentroid(shape.points);
+                    const offsetX = shape.labelOffset?.x || 0;
+                    const offsetY = shape.labelOffset?.y || 0;
+                    const labelX = centroid.x + offsetX;
+                    const labelY = centroid.y + offsetY;
+
+                    ctx.fillStyle = HIGHLIGHT_COLOR;
+                    ctx.strokeStyle = 'white';
+                    ctx.beginPath();
+                    ctx.arc(labelX, labelY, LABEL_HANDLE_RADIUS, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                    ctx.setLineDash([2, 2]);
+                    ctx.beginPath();
+                    ctx.moveTo(centroid.x, centroid.y);
+                    ctx.lineTo(labelX, labelY);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                });
+            }
+
+            if (appState.currentPoints.length > 0) drawCurrentPath(mouseX, mouseY);
+        }
+
+        function drawCurrentPath(mouseX, mouseY) {
+            ctx.beginPath();
+            ctx.moveTo(appState.currentPoints[0].x, appState.currentPoints[0].y);
+            for (let i = 1; i < appState.currentPoints.length; i++) {
+                ctx.lineTo(appState.currentPoints[i].x, appState.currentPoints[i].y);
+            }
+            if (mouseX !== undefined) ctx.lineTo(mouseX, mouseY);
+            ctx.strokeStyle = '#555';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.fillStyle = appState.currentRisk.color;
+            ctx.globalAlpha = 0.6;
+            appState.currentPoints.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1.0;
+        }
+
+        function isPointInHandle(p, x, y) {
+            return Math.hypot(p.x - x, p.y - y) <= HANDLE_RADIUS + 2;
+        }
+        
+        function isPointInLabelHandle(shape, x, y) {
+            const centroid = getCentroid(shape.points);
+            const offsetX = shape.labelOffset?.x || 0;
+            const offsetY = shape.labelOffset?.y || 0;
+            return Math.hypot((centroid.x + offsetX) - x, (centroid.y + offsetY) - y) <= LABEL_HANDLE_RADIUS + 2;
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            const { x, y } = getMousePos(e);
+
+            if (appState.mode === 'edit') {
+                if (appState.selectedShapeIndex !== -1) {
+                    const selectedShape = appState.shapes[appState.selectedShapeIndex];
+                    if (isPointInLabelHandle(selectedShape, x, y)) {
+                        appState.drag.isDragging = true;
+                        appState.drag.isLabelDrag = true;
+                        appState.drag.shapeIndex = appState.selectedShapeIndex;
+                        updateStatus("Editing label position...");
+                        return;
+                    }
+
+                    for (let j = 0; j < selectedShape.points.length; j++) {
+                        if (isPointInHandle(selectedShape.points[j], x, y)) {
+                            appState.drag.isDragging = true;
+                            appState.drag.isLabelDrag = false;
+                            appState.drag.shapeIndex = appState.selectedShapeIndex;
+                            appState.drag.pointIndex = j;
+                            updateStatus("Editing polygon vertex...");
+                            return;
+                        }
+                    }
+
+                    const insertedIndex = insertPointIfNearEdge(selectedShape, x, y);
+                    if (insertedIndex !== -1) {
+                        appState.drag.isDragging = true;
+                        appState.drag.isLabelDrag = false;
+                        appState.drag.shapeIndex = appState.selectedShapeIndex;
+                        appState.drag.pointIndex = insertedIndex;
+                        updateStatus("New vertex created and selected for editing.");
+                        draw();
+                        return;
+                    }
+
+                    deselectShape();
+                    draw();
+                    return;
+                }
+
+                for (let i = appState.shapes.length - 1; i >= 0; i--) {
+                    const shape = appState.shapes[i];
+
+                    if (isPointInLabelHandle(shape, x, y)) {
+                        appState.selectedShapeIndex = i;
+                        appState.drag.isDragging = true;
+                        appState.drag.isLabelDrag = true;
+                        appState.drag.shapeIndex = i;
+                        updateStatus(`Selected ${shape.type}. Editing label position...`);
+                        draw();
+                        return;
+                    }
+
+                    for (let j = 0; j < shape.points.length; j++) {
+                        if (isPointInHandle(shape.points[j], x, y)) {
+                            appState.selectedShapeIndex = i;
+                            appState.drag.isDragging = true;
+                            appState.drag.isLabelDrag = false;
+                            appState.drag.shapeIndex = i;
+                            appState.drag.pointIndex = j;
+                            updateStatus(`Selected ${shape.type}. Editing polygon vertex...`);
+                            draw();
+                            return;
+                        }
+                    }
+                }
+                return;
+            }
+
+            if (e.button === 2) {
+                finishShape();
+                return;
+            }
+            appState.currentPoints.push({ x, y });
+            draw();
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const { x, y } = getMousePos(e);
+
+            if (appState.mode === 'edit' && appState.drag.isDragging) {
+                const sIdx = appState.drag.shapeIndex;
+                if (sIdx > -1) {
+                    if (appState.drag.isLabelDrag) {
+                        const shape = appState.shapes[sIdx];
+                        const centroid = getCentroid(shape.points);
+                        shape.labelOffset.x = x - centroid.x;
+                        shape.labelOffset.y = y - centroid.y;
+                    } else if (appState.drag.pointIndex > -1) {
+                        appState.shapes[sIdx].points[appState.drag.pointIndex] = { x, y };
+                    }
+                    draw();
+                }
+            } else if (appState.mode === 'draw') {
+                draw(x, y);
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            if (appState.mode === 'edit' && appState.drag.isDragging) {
+                appState.drag.isDragging = false;
+                appState.drag.pointIndex = -1;
+                appState.drag.isLabelDrag = false;
+                if (appState.shapes[appState.selectedShapeIndex]) {
+                    updateStatus(`Selected ${appState.shapes[appState.selectedShapeIndex].type}. Dragging finished.`);
+                }
+            }
+        });
+
+        canvas.addEventListener('dblclick', (e) => {
+            e.preventDefault();
+            if (appState.mode === 'draw') finishShape();
+        });
+
+        canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+        function getMousePos(evt) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            return {
+                x: (evt.clientX - rect.left) * scaleX,
+                y: (evt.clientY - rect.top) * scaleY
+            };
+        }
+
+        function finishShape() {
+            if (appState.currentPoints.length < 3) {
+                appState.currentPoints = [];
+                draw();
+                return;
+            }
+
+            const currentRisk = appState.currentRisk;
+            const originalPoints = [...appState.currentPoints];
+
+            appState.shapes.push({
+                type: currentRisk.type,
+                color: currentRisk.color,
+                priority: currentRisk.priority,
+                darkColor: currentRisk.darkColor || currentRisk.color,
+                textDarkness: currentRisk.textDarkness,
+                hatched: !!currentRisk.hatched,
+                points: originalPoints,
+                labelOffset: { x: 0, y: 0 }
+            });
+
+            if (appState.isAutoBufferEnabled && currentRisk.priority > 0) {
+                const lowerRisks = ALL_RISKS_CONFIG.filter(r => r.priority < currentRisk.priority).sort((a, b) => a.priority - b.priority);
+
+                lowerRisks.forEach(riskConfig => {
+                    const scaleFactor = 1.0 + ((currentRisk.priority - riskConfig.priority) * SCALE_INCREMENT);
+                    const newPoints = scalePolygon(originalPoints, scaleFactor);
+
+                    if (newPoints.length >= 3) {
+                        appState.shapes.push({
+                            type: riskConfig.type,
+                            color: riskConfig.color,
+                            priority: riskConfig.priority,
+                            darkColor: riskConfig.darkColor,
+                            textDarkness: riskConfig.textDarkness,
+                            hatched: !!currentRisk.hatched,
+                            points: newPoints,
+                            labelOffset: { x: 0, y: 0 }
+                        });
+                    }
+                });
+
+                updateStatus(`Generated ${lowerRisks.length} surrounding outlooks for ${currentRisk.type}!`);
+            }
+
+            appState.currentPoints = [];
+            appState.shapes.sort((a, b) => a.priority - b.priority);
+            draw();
+        }
+
+        function undoLastPoint() {
+            if (appState.mode === 'draw' && appState.currentPoints.length > 0) {
+                appState.currentPoints.pop();
+                draw();
+            }
+        }
+
+        function undoLastShape() {
+            if (appState.shapes.length > 0) {
+                if (appState.selectedShapeIndex !== -1) {
+                    appState.shapes.splice(appState.selectedShapeIndex, 1);
+                    deselectShape();
+                    updateStatus("Selected polygon removed.");
+                } else {
+                    appState.shapes.pop();
+                    draw();
+                    updateStatus("Last polygon removed.");
+                }
+            }
+        }
+
+        function clearAll() {
+            appState.shapes = [];
+            appState.currentPoints = [];
+            deselectShape();
+            draw();
+            updateStatus("All polygons cleared.");
+        }
+
+        function handleImageUpload(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    appState.backgroundImage.src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function downloadImage() {
+            const prevMode = appState.mode;
+            const prevSelected = appState.selectedShapeIndex;
+            appState.mode = 'preview';
+            appState.selectedShapeIndex = -1;
+            draw();
+
+            const link = document.createElement('a');
+            link.download = 'spc_outlook_forecast.png';
+            link.href = canvas.toDataURL();
+            link.click();
+
+            appState.mode = prevMode;
+            appState.selectedShapeIndex = prevSelected;
+            draw();
+        }
+
+        function highlightRiskBtn(type) {
+            document.querySelectorAll('.risk-btn').forEach(b => b.classList.remove('active'));
+            const riskConfig = ALL_RISKS_CONFIG.find(r => r.type === type);
+            if (riskConfig) {
+                const sel = document.querySelector(`.${riskConfig.btnClass}`);
+                if (sel) sel.classList.add('active');
+            }
+        }
+
+        function updateStatus(msg) {
+            statusText.textContent = msg;
+        }
+    </script>
+</body>
+</html>
