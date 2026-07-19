@@ -5,526 +5,192 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SPC Outlook Generator</title>
     <style>
-        :root {
-            --navy-950: #07111f;
-            --navy-900: #0b1728;
-            --navy-800: #102239;
-            --panel: rgba(15, 31, 51, 0.86);
-            --panel-strong: rgba(10, 23, 39, 0.96);
-            --line: rgba(160, 190, 220, 0.16);
-            --muted: #91a4b8;
-            --text: #eef5fb;
-            --accent: #55b8ff;
-            --accent-2: #8b7cff;
-            --danger: #e04a5a;
-            --shadow: 0 20px 55px rgba(0,0,0,.35);
-        }
+:root {
+    --metal-950: #07111d;
+    --metal-900: #0b1828;
+    --metal-800: #12263a;
+    --metal-700: #1c3a55;
+    --silver: #d7e4ef;
+    --silver-dim: #9fb3c4;
+    --blue: #55c4ff;
+    --blue-deep: #1778b9;
+    --line: rgba(180, 215, 238, .20);
+    --glass: rgba(12, 29, 47, .88);
+    --shadow: 0 24px 70px rgba(0, 0, 0, .48);
+}
 
-        * { box-sizing: border-box; }
+* { box-sizing: border-box; }
+html, body { width: 100%; height: 100%; margin: 0; }
+body {
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: #edf7ff;
+    background:
+        radial-gradient(circle at 15% 10%, rgba(63, 160, 226, .16), transparent 34%),
+        radial-gradient(circle at 85% 90%, rgba(38, 103, 166, .15), transparent 34%),
+        linear-gradient(135deg, #06101b, #0a1726 45%, #07111e);
+    overflow: hidden;
+    overscroll-behavior: none;
+}
 
-        body {
-            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            background:
-                radial-gradient(circle at 20% 10%, rgba(55, 115, 180, .18), transparent 32%),
-                radial-gradient(circle at 85% 85%, rgba(118, 77, 190, .16), transparent 30%),
-                var(--navy-950);
-            color: var(--text);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
+button, input { font: inherit; }
+button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 
-        .sidebar {
-            width: 310px;
-            background:
-                linear-gradient(180deg, rgba(16, 34, 57, .98), rgba(7, 17, 31, .98));
-            color: var(--text);
-            padding: 18px 16px 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            border-right: 1px solid var(--line);
-            box-shadow: 18px 0 55px rgba(0,0,0,.22);
-            overflow-y: auto;
-            flex-shrink: 0;
-            z-index: 5;
-        }
+.sidebar {
+    position: relative;
+    width: 308px;
+    height: 100dvh;
+    background:
+        linear-gradient(145deg, rgba(29, 57, 79, .98), rgba(8, 19, 32, .99) 52%, rgba(12, 33, 52, .99)),
+        linear-gradient(90deg, rgba(255,255,255,.08), transparent 30%);
+    border-right: 1px solid rgba(205, 229, 244, .18);
+    box-shadow: 20px 0 60px rgba(0,0,0,.30), inset -1px 0 0 rgba(255,255,255,.04);
+    padding: 16px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    z-index: 30;
+}
 
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 4px 6px 16px;
-            border-bottom: 1px solid var(--line);
-        }
+.brand { display: flex; align-items: center; gap: 12px; padding: 4px 6px 15px; border-bottom: 1px solid var(--line); }
+.brand-mark {
+    width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center;
+    color: #fff; font-size: 21px;
+    background: linear-gradient(145deg, #cfe3ef 0%, #5cbdf3 26%, #1c6eaa 72%, #d6e4ec 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.8), 0 10px 25px rgba(31,145,213,.28);
+}
+.brand h1 { margin: 0; font-size: 1rem; letter-spacing: -.02em; }
+.brand p { margin: 4px 0 0; color: var(--silver-dim); font-size: .68rem; text-transform: uppercase; letter-spacing: .08em; }
+.section-title { margin: 12px 4px 3px; color: #91abc0; font-size: .66rem; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; }
+.risk-stack, .tool-stack, .file-stack { display: flex; flex-direction: column; gap: 6px; }
 
-        .brand-mark {
-            width: 42px;
-            height: 42px;
-            border-radius: 13px;
-            display: grid;
-            place-items: center;
-            font-size: 20px;
-            background: linear-gradient(135deg, var(--accent), var(--accent-2));
-            box-shadow: 0 8px 25px rgba(75, 155, 255, .25);
-        }
+button {
+    width: 100%; border: 1px solid transparent; border-radius: 10px; padding: 10px 12px;
+    color: #eaf6ff; font-size: .82rem; font-weight: 750; text-align: left;
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; transition: transform .16s ease, filter .16s ease, box-shadow .16s ease, border-color .16s ease;
+}
+button:hover { filter: brightness(1.08); transform: translateY(-1px); }
+button:active { transform: translateY(0) scale(.985); }
+.risk-btn { position: relative; overflow: hidden; box-shadow: 0 6px 15px rgba(0,0,0,.14); }
+.risk-btn::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(115deg, rgba(255,255,255,.22), transparent 42%, rgba(0,0,0,.08)); }
+.risk-btn.active { box-shadow: 0 0 0 2px #f4fbff, 0 8px 22px rgba(0,0,0,.3); transform: translateX(3px); }
+.btn-tstm { background: #c1e9c1; color: #2f492f; }
+.btn-mrgl { background: #76c043; color: white; text-shadow: 0 .5px .5px rgba(0,0,0,.3); }
+.btn-slgt { background: #ffeb3b; color: #333; }
+.btn-enh { background: #e69f00; color: white; text-shadow: 0 1px 1px rgba(0,0,0,.3); }
+.btn-mdt { background: #e60000; color: white; text-shadow: 0 1px 1px rgba(0,0,0,.3); }
+.btn-high { background: #ff00ff; color: white; text-shadow: 0 1px 1px rgba(0,0,0,.3); }
+.tool-btn {
+    background: linear-gradient(145deg, rgba(255,255,255,.09), rgba(255,255,255,.025));
+    border-color: var(--line); color: #d9edf9; justify-content: flex-start;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+}
+.tool-btn:hover { border-color: rgba(85,196,255,.58); background: linear-gradient(145deg, rgba(85,196,255,.16), rgba(255,255,255,.035)); }
+.tool-btn.active-tool { border-color: rgba(85,196,255,.78); box-shadow: inset 3px 0 0 var(--blue), 0 0 18px rgba(85,196,255,.10); background: rgba(42,125,181,.20); }
+.tool-btn.active-tool-white { background: linear-gradient(145deg, #f4fbff, #b7d0df); color: #102235; border-color: #fff; }
+.action-btn { justify-content: center; background: linear-gradient(145deg, #8fd9ff, #2386c3 46%, #0e4e83); border-color: rgba(255,255,255,.28); box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 10px 24px rgba(19,126,190,.22); }
+.danger-btn { background: linear-gradient(145deg, #d44f60, #7d1d2b) !important; }
+.sidebar-footer { margin-top: auto; padding: 12px 5px 0; border-top: 1px solid var(--line); color: #71899c; font-size: .68rem; }
+.file-input { display: none; }
 
-        .brand h1 {
-            font-size: 1rem;
-            line-height: 1.1;
-            margin: 0;
-            letter-spacing: -.02em;
-        }
+.main-content {
+    min-width: 0; min-height: 0; width: 100%; height: 100dvh; position: relative;
+    display: flex; flex-direction: column; overflow: hidden;
+    background: radial-gradient(circle at 50% 42%, rgba(43, 112, 158, .22), transparent 46%), #071523;
+    padding: 70px 16px 12px;
+}
+.workspace-toolbar { position: absolute; top: 14px; left: 18px; right: 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; z-index: 4; }
+.workspace-title { display: flex; flex-direction: column; gap: 2px; }
+.workspace-title strong { font-size: 1rem; letter-spacing: -.02em; }
+.workspace-title span { color: #9db5c6; font-size: .70rem; }
+.workspace-chips { display: flex; gap: 7px; flex-wrap: wrap; justify-content: flex-end; }
+.chip { border: 1px solid var(--line); border-radius: 999px; padding: 6px 10px; background: linear-gradient(145deg, rgba(255,255,255,.08), rgba(255,255,255,.025)); color: #c2d6e4; font-size: .66rem; font-weight: 750; white-space: nowrap; }
 
-        .brand p {
-            color: var(--muted);
-            margin: 4px 0 0;
-            font-size: .72rem;
-            letter-spacing: .05em;
-            text-transform: uppercase;
-        }
+#canvas-wrapper {
+    position: relative; flex: 1 1 auto; min-width: 0; min-height: 0; width: 100%; height: 100%;
+    overflow: hidden; display: block; border: 2px solid rgba(220,239,250,.75); border-radius: 18px;
+    background:
+        linear-gradient(145deg, rgba(255,255,255,.14), transparent 18%),
+        linear-gradient(135deg, #dfeaf0, #7b9bad 45%, #d5e5ec 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.8), inset 0 0 0 1px rgba(4,31,51,.32), var(--shadow);
+    touch-action: none; overscroll-behavior: none; isolation: isolate;
+}
+#canvas-wrapper::before { content: ""; position: absolute; inset: 6px; border: 1px solid rgba(255,255,255,.55); border-radius: 12px; pointer-events: none; z-index: 8; }
+#canvas-wrapper::after { content: ""; position: absolute; inset: 0; border-radius: 16px; pointer-events: none; background: linear-gradient(120deg, rgba(255,255,255,.10), transparent 24%, transparent 72%, rgba(0,32,54,.12)); z-index: 7; }
 
-        .section-title {
-            font-size: .68rem;
-            text-transform: uppercase;
-            color: #8298ad;
-            letter-spacing: .14em;
-            margin: 12px 4px 3px;
-            font-weight: 800;
-        }
+canvas {
+    position: absolute; left: 50%; top: 50%; display: block; max-width: none; max-height: none;
+    transform-origin: center center; cursor: crosshair; touch-action: none; will-change: transform, width, height;
+}
+canvas.edit-mode { cursor: default; }
 
-        .risk-stack, .tool-stack, .file-stack {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
+.zoom-controls, .vertex-controls {
+    position: absolute; z-index: 12; display: flex; align-items: center; gap: 6px;
+    padding: 6px; border: 1px solid rgba(210,234,247,.28); border-radius: 14px;
+    background: linear-gradient(145deg, rgba(23,55,77,.94), rgba(5,18,31,.94));
+    box-shadow: 0 12px 35px rgba(0,0,0,.36), inset 0 1px 0 rgba(255,255,255,.12);
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+}
+.zoom-controls { right: 14px; bottom: 14px; }
+.zoom-controls button, .vertex-controls button { width: 42px; height: 40px; min-width: 42px; padding: 0; justify-content: center; background: linear-gradient(145deg, rgba(255,255,255,.13), rgba(255,255,255,.04)); border-color: rgba(190,220,238,.22); color: #f3fbff; font-size: 1.18rem; }
+.zoom-level { min-width: 58px !important; font-size: .72rem !important; color: #c7dbe8 !important; }
+.vertex-controls { display: none; left: 50%; bottom: 14px; transform: translateX(-50%); width: min(360px, calc(100% - 24px)); }
+.vertex-controls.visible { display: flex; }
+.vertex-index { flex: 1; text-align: center; color: #dcecf5; font-size: .72rem; white-space: nowrap; }
 
-        button {
-            padding: 10px 12px;
-            border: 1px solid transparent;
-            border-radius: 9px;
-            cursor: pointer;
-            font-weight: 700;
-            transition: transform .18s ease, filter .18s ease, border-color .18s ease, box-shadow .18s ease;
-            text-align: left;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: .82rem;
-        }
+.status-bar { position: absolute; left: 24px; bottom: 16px; max-width: min(52%, 560px); z-index: 10; pointer-events: none; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; background: rgba(4,14,24,.78); color: #d7e8f3; font-size: .74rem; box-shadow: 0 10px 25px rgba(0,0,0,.25); }
 
-        button:hover {
-            filter: brightness(1.08);
-            transform: translateY(-1px);
-        }
+.drawer-toggle, .drawer-backdrop { display: none; }
 
-        .risk-btn {
-            margin-bottom: 0;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 5px 12px rgba(0,0,0,.12);
-        }
+.modal { display: none; position: fixed; inset: 0; z-index: 1000; align-items: center; justify-content: center; padding: 18px; background: rgba(0,0,0,.66); backdrop-filter: blur(9px); }
+.modal-content { width: min(390px, 100%); padding: 22px; border: 1px solid rgba(200,228,242,.20); border-radius: 17px; color: #eef7fc; background: linear-gradient(145deg, #1c3a52, #091827 68%); box-shadow: 0 30px 80px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.12); }
+.modal-content h3 { margin: 0 0 4px; font-size: 1.12rem; }
+.modal-subtitle { margin: 0 0 16px; color: #9db5c6; font-size: .77rem; }
+.modal-content label { display: block; margin: 13px 0 6px; color: #bdd1df; font-size: .77rem; font-weight: 750; }
+.modal-content input[type="text"] { width: 100%; padding: 10px 11px; color: #fff; background: rgba(255,255,255,.06); border: 1px solid var(--line); border-radius: 8px; outline: none; }
+.modal-content input[type="text"]:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(85,196,255,.13); }
+.color-row, .darkness-row { display: flex; align-items: center; gap: 10px; }
+.color-row input[type="color"] { width: 54px; height: 38px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: transparent; }
+.darkness-row input[type="range"] { flex: 1; accent-color: var(--blue); }
+.darkness-value { min-width: 48px; color: #dce8f2; text-align: right; font-size: .8rem; font-variant-numeric: tabular-nums; }
+.check-row { display: flex; align-items: center; gap: 9px; margin-top: 14px; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.035); }
+.check-row label { margin: 0; color: #dce8f2; }
+.check-row input { accent-color: var(--blue); }
+.modal-actions { display: flex; gap: 8px; margin-top: 20px; }
+.modal-actions button { justify-content: center; }
 
-        .risk-btn::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(90deg, rgba(255,255,255,.14), transparent 50%);
-            pointer-events: none;
-        }
+@media (max-width: 850px) {
+    body { display: block; }
+    .main-content { height: 100dvh; padding: 62px 8px 8px; }
+    .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: min(330px, 88vw); height: 100dvh; transform: translateX(-105%); transition: transform .24s ease; box-shadow: 18px 0 60px rgba(0,0,0,.55); }
+    .sidebar.open { transform: translateX(0); }
+    .drawer-backdrop { position: fixed; inset: 0; z-index: 20; background: rgba(0,0,0,.48); backdrop-filter: blur(2px); }
+    .drawer-backdrop.visible { display: block; }
+    .drawer-toggle { position: absolute; top: 12px; left: 12px; z-index: 15; display: grid; place-items: center; width: 42px; height: 42px; padding: 0; border-radius: 13px; color: #f4fbff; background: linear-gradient(145deg, #8fd9ff, #1d73ad 52%, #0b3e69); border-color: rgba(255,255,255,.34); box-shadow: 0 10px 24px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.65); font-size: 1.2rem; }
+    .workspace-toolbar { left: 64px; right: 12px; top: 13px; }
+    .workspace-title strong { font-size: .91rem; }
+    .workspace-title span, .workspace-chips { display: none; }
+    .status-bar { left: 16px; bottom: 16px; max-width: calc(100% - 32px); }
+    .zoom-controls { right: 12px; bottom: 12px; }
+    .vertex-controls { bottom: 12px; }
+}
 
-        .risk-btn.active {
-            box-shadow: 0 0 0 2px #fff, 0 8px 20px rgba(0,0,0,.25);
-            transform: translateX(4px);
-            z-index: 10;
-        }
-
-        .btn-tstm { background-color: #c1e9c1; color: #2f492f; }
-        .btn-mrgl { background-color: #76c043; color: white; text-shadow: 0 .5px .5px rgba(0,0,0,.3); }
-        .btn-slgt { background-color: #ffeb3b; color: #333; }
-        .btn-enh  { background-color: #e69f00; color: white; text-shadow: 0 1px 1px rgba(0,0,0,.3); }
-        .btn-mdt  { background-color: #e60000; color: white; text-shadow: 0 1px 1px rgba(0,0,0,.3); }
-        .btn-high { background-color: #ff00ff; color: white; text-shadow: 0 1px 1px rgba(0,0,0,.3); }
-
-        .tool-btn {
-            background: rgba(255,255,255,.045);
-            color: #dce8f2;
-            border-color: var(--line);
-            margin-bottom: 0;
-            justify-content: flex-start;
-        }
-
-        .tool-btn:hover { background: rgba(85,184,255,.12); border-color: rgba(85,184,255,.4); }
-
-        .tool-btn.active-tool {
-            background: linear-gradient(90deg, rgba(52,152,219,.3), rgba(52,152,219,.08));
-            border-color: rgba(85,184,255,.65);
-            box-shadow: inset 3px 0 0 var(--accent);
-        }
-
-        .tool-btn.active-tool-white {
-            background: rgba(255,255,255,.95);
-            color: #152235;
-            border-color: #fff;
-            box-shadow: 0 0 18px rgba(255,255,255,.2);
-        }
-
-        .action-btn {
-            background: linear-gradient(135deg, #21b86b, #158c52);
-            color: white;
-            justify-content: center;
-            margin-top: 0;
-            border: 1px solid rgba(255,255,255,.15);
-            box-shadow: 0 8px 20px rgba(21,140,82,.18);
-        }
-
-        .danger-btn { background: linear-gradient(135deg, #d64554, #9d2634) !important; }
-
-        .sidebar-footer {
-            margin-top: auto;
-            color: #71869a;
-            font-size: .7rem;
-            padding: 12px 5px 0;
-            border-top: 1px solid var(--line);
-        }
-
-        .file-input { display: none; }
-
-        .main-content {
-            flex-grow: 1;
-            min-width: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            background:
-                radial-gradient(circle at 50% 42%, rgba(48, 85, 120, .22), transparent 45%),
-                #091523;
-            padding: 78px 28px 28px;
-        }
-
-        .workspace-toolbar {
-            position: absolute;
-            top: 18px;
-            left: 24px;
-            right: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            z-index: 2;
-        }
-
-        .workspace-title {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .workspace-title strong {
-            font-size: 1rem;
-            letter-spacing: -.02em;
-        }
-
-        .workspace-title span {
-            font-size: .72rem;
-            color: var(--muted);
-        }
-
-        .workspace-chips {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            justify-content: flex-end;
-        }
-
-        .chip {
-            border: 1px solid var(--line);
-            background: rgba(255,255,255,.045);
-            color: #b9cad9;
-            border-radius: 999px;
-            padding: 6px 10px;
-            font-size: .68rem;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        #canvas-wrapper {
-            box-shadow: var(--shadow), 0 0 0 1px rgba(255,255,255,.1);
-            border: 5px solid rgba(255,255,255,.92);
-            border-radius: 12px;
-            background-color: white;
-            overflow: hidden;
-            max-width: 100%;
-            max-height: 100%;
-            display: flex;
-            position: relative;
-            touch-action: none;
-        }
-
-        #canvas-wrapper::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            border: 1px solid rgba(0,0,0,.15);
-            border-radius: 7px;
-        }
-
-        canvas {
-            display: block;
-            cursor: crosshair;
-            max-width: 100%;
-            max-height: calc(100vh - 150px);
-            transform-origin: center center;
-            will-change: transform;
-            touch-action: none;
-        }
-
-        .zoom-controls {
-            position: absolute;
-            right: 16px;
-            bottom: 62px;
-            z-index: 4;
-            display: flex;
-            gap: 6px;
-            padding: 6px;
-            border: 1px solid var(--line);
-            border-radius: 12px;
-            background: rgba(5, 15, 27, .82);
-            backdrop-filter: blur(12px);
-            box-shadow: 0 10px 30px rgba(0,0,0,.25);
-        }
-
-        .zoom-controls button {
-            width: 40px;
-            height: 38px;
-            padding: 0;
-            justify-content: center;
-            font-size: 1.1rem;
-            background: rgba(255,255,255,.08);
-            color: var(--text);
-            border-color: var(--line);
-        }
-
-        .zoom-level {
-            min-width: 48px;
-            justify-content: center;
-            font-size: .72rem;
-            color: #b9cad9;
-        }
-
-        .vertex-controls {
-            display: none;
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            bottom: 58px;
-            z-index: 5;
-            width: min(320px, calc(100% - 24px));
-            padding: 8px;
-            border: 1px solid var(--line);
-            border-radius: 14px;
-            background: rgba(5,15,27,.9);
-            backdrop-filter: blur(14px);
-            box-shadow: 0 12px 35px rgba(0,0,0,.3);
-            align-items: center;
-            gap: 6px;
-        }
-
-        .vertex-controls.visible { display: flex; }
-        .vertex-controls button {
-            min-width: 38px;
-            height: 36px;
-            padding: 0 8px;
-            justify-content: center;
-            background: rgba(255,255,255,.08);
-            color: var(--text);
-            border-color: var(--line);
-        }
-
-        .vertex-index {
-            flex: 1;
-            text-align: center;
-            font-size: .72rem;
-            color: #dce8f2;
-            white-space: nowrap;
-        }
-
-        canvas.edit-mode { cursor: default; }
-
-        .status-bar {
-            position: absolute;
-            bottom: 14px;
-            left: 24px;
-            right: 24px;
-            width: auto;
-            background: rgba(4, 12, 22, .78);
-            border: 1px solid var(--line);
-            backdrop-filter: blur(12px);
-            color: #d8e7f3;
-            padding: 9px 13px;
-            border-radius: 9px;
-            text-align: left;
-            font-size: .76rem;
-            pointer-events: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,.2);
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,.65);
-            backdrop-filter: blur(8px);
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 20px;
-        }
-
-        .modal-content {
-            background: linear-gradient(180deg, #14263b, #0b1728);
-            color: var(--text);
-            padding: 22px;
-            border: 1px solid var(--line);
-            border-radius: 16px;
-            width: min(390px, 100%);
-            box-shadow: 0 25px 70px rgba(0,0,0,.5);
-        }
-
-        .modal-content h3 {
-            margin: 0 0 4px;
-            font-size: 1.15rem;
-        }
-
-        .modal-subtitle {
-            margin: 0 0 16px;
-            color: var(--muted);
-            font-size: .78rem;
-        }
-
-        .modal-content label {
-            display: block;
-            margin: 13px 0 6px;
-            font-size: .78rem;
-            color: #b9cad9;
-            font-weight: 700;
-        }
-
-        .modal-content input[type="text"] {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 10px 11px;
-            background: rgba(255,255,255,.06);
-            color: white;
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            outline: none;
-        }
-
-        .modal-content input[type="text"]:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(85,184,255,.12);
-        }
-
-        .color-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .color-row input[type="color"] {
-            width: 54px;
-            height: 38px;
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            background: transparent;
-            padding: 2px;
-        }
-
-        .darkness-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .darkness-row input[type="range"] {
-            flex: 1;
-            accent-color: var(--accent);
-        }
-
-        .darkness-value {
-            min-width: 48px;
-            text-align: right;
-            font-variant-numeric: tabular-nums;
-            color: #dce8f2;
-            font-size: .8rem;
-        }
-
-        .check-row {
-            display: flex;
-            align-items: center;
-            gap: 9px;
-            margin-top: 14px;
-            padding: 10px;
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            background: rgba(255,255,255,.035);
-        }
-
-        .check-row label {
-            margin: 0;
-            color: #dce8f2;
-        }
-
-        .check-row input { accent-color: var(--accent); }
-
-        .modal-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 20px;
-        }
-
-        .modal-actions button { justify-content: center; }
-
-        @media (max-width: 850px) {
-            body { flex-direction: column; overflow: auto; min-height: 100vh; }
-            .sidebar { width: 100%; max-height: none; padding: 12px; }
-            .risk-stack { display: grid; grid-template-columns: repeat(3, 1fr); }
-            .tool-stack, .file-stack { display: grid; grid-template-columns: repeat(2, 1fr); }
-            .sidebar-footer { display: none; }
-            .main-content { min-height: 70vh; height: calc(100vh - 280px); padding: 76px 10px 58px; overflow: hidden; }
-            .workspace-toolbar { left: 12px; right: 12px; top: 12px; }
-            .workspace-chips { display: none; }
-            .status-bar { left: 12px; right: 12px; bottom: 10px; }
-            body { height: 100dvh; overflow: hidden; }
-            .sidebar { max-height: 42dvh; overflow-y: auto; }
-            .main-content { flex: 1; min-height: 0; height: auto; }
-            canvas { max-height: none; max-width: 100%; }
-            #canvas-wrapper { max-width: 100%; max-height: 100%; }
-            .zoom-controls { right: 12px; bottom: 62px; }
-            .vertex-controls { bottom: 58px; }
-        }
-
-        @media (max-width: 520px) {
-            .risk-stack { grid-template-columns: repeat(2, 1fr); }
-            .tool-stack, .file-stack { grid-template-columns: repeat(2, 1fr); }
-            .brand { padding-bottom: 10px; }
-            .workspace-title span { display: none; }
-            .workspace-title strong { font-size: .9rem; }
-        }
-    </style>
+@media (max-width: 520px) {
+    .zoom-controls button, .vertex-controls button { width: 44px; height: 42px; min-width: 44px; }
+    .zoom-level { min-width: 60px !important; }
+}
+</style>
 </head>
 <body>
 
-    <div class="sidebar">
+    <button class="drawer-toggle" id="drawer-toggle" type="button" onclick="toggleControlsPanel()" aria-label="Open controls">â˜°</button>
+    <div class="drawer-backdrop" id="drawer-backdrop" onclick="closeControlsPanel()"></div>
+
+    <div class="sidebar" id="controls-panel">
         <div class="brand">
-            <div class="brand-mark">⛈</div>
+            <div class="brand-mark">â›ˆ</div>
             <div>
                 <h1>SPC Outlook Studio</h1>
                 <p>Forecast polygon designer</p>
@@ -541,27 +207,27 @@
             <button class="risk-btn btn-high" onclick="setRisk('HIGH')"><span>5-HIGH</span> <span>5</span></button>
         </div>
         <div class="tool-stack">
-            <button class="tool-btn" onclick="openCustomRiskDialog()">⚙ Config Custom Draw</button>
+            <button class="tool-btn" onclick="openCustomRiskDialog()">âš™ Config Custom Draw</button>
         </div>
 
         <div class="section-title">Drawing Tools</div>
         <div class="tool-stack">
-            <button class="tool-btn" id="btn-auto-buffer" onclick="toggleAutoBuffer()">🔗 Auto-Buffer (OFF)</button>
-            <button class="tool-btn" id="btn-hatching" onclick="toggleHatching()">▤ CIG Hatching (OFF)</button>
-            <button class="tool-btn" id="btn-edit" onclick="toggleEditMode()">🔧 Edit Polygons</button>
-            <button class="tool-btn" onclick="undoLastPoint()">↩ Undo Point</button>
-            <button class="tool-btn" onclick="undoLastShape()">🔙 Undo Shape</button>
-            <button class="tool-btn danger-btn" onclick="clearAll()">🗑️ Clear All</button>
+            <button class="tool-btn" id="btn-auto-buffer" onclick="toggleAutoBuffer()">ðŸ”— Auto-Buffer (OFF)</button>
+            <button class="tool-btn" id="btn-hatching" onclick="toggleHatching()">â–¤ CIG Hatching (OFF)</button>
+            <button class="tool-btn" id="btn-edit" onclick="toggleEditMode()">ðŸ”§ Edit Polygons</button>
+            <button class="tool-btn" onclick="undoLastPoint()">â†© Undo Point</button>
+            <button class="tool-btn" onclick="undoLastShape()">ðŸ”™ Undo Shape</button>
+            <button class="tool-btn danger-btn" onclick="clearAll()">ðŸ—‘ï¸ Clear All</button>
         </div>
 
         <div class="section-title">File</div>
         <div class="file-stack">
-            <button class="tool-btn" onclick="document.getElementById('mapUpload').click()">📂 Upload Map</button>
+            <button class="tool-btn" onclick="document.getElementById('mapUpload').click()">ðŸ“‚ Upload Map</button>
             <input type="file" id="mapUpload" class="file-input" accept="image/*" onchange="handleImageUpload(this)">
-            <button class="action-btn" onclick="downloadImage()">💾 Save Outlook PNG</button>
+            <button class="action-btn" onclick="downloadImage()">ðŸ’¾ Save Outlook PNG</button>
         </div>
 
-        <div class="sidebar-footer">SPC-inspired visualization tools · Draw with clicks, finish with double-click or right-click.</div>
+        <div class="sidebar-footer">SPC-inspired visualization tools Â· Draw with clicks, finish with double-click or right-click.</div>
     </div>
 
     <div class="main-content">
@@ -571,28 +237,28 @@
                 <span>Build and refine your forecast areas</span>
             </div>
             <div class="workspace-chips">
-                <span class="chip">● Vector polygons</span>
-                <span class="chip">▤ CIG hatch overlay</span>
-                <span class="chip">↗ PNG export</span>
+                <span class="chip">â— Vector polygons</span>
+                <span class="chip">â–¤ CIG hatch overlay</span>
+                <span class="chip">â†— PNG export</span>
             </div>
         </div>
         <div id="canvas-wrapper">
             <canvas id="outlookCanvas"></canvas>
-        </div>
-        <div class="zoom-controls" aria-label="Canvas zoom controls">
-            <button type="button" onclick="zoomOut()" aria-label="Zoom out">−</button>
-            <button type="button" class="zoom-level" id="zoom-level">100%</button>
-            <button type="button" onclick="zoomIn()" aria-label="Zoom in">+</button>
-            <button type="button" onclick="resetZoom()" aria-label="Reset zoom">↺</button>
-        </div>
-        <div class="vertex-controls" id="vertex-controls">
-            <button type="button" onclick="selectPreviousVertex()">‹</button>
-            <div class="vertex-index" id="vertex-index">Vertex 1</div>
-            <button type="button" onclick="nudgeSelectedVertex(0,-1)">↑</button>
-            <button type="button" onclick="nudgeSelectedVertex(-1,0)">←</button>
-            <button type="button" onclick="nudgeSelectedVertex(1,0)">→</button>
-            <button type="button" onclick="nudgeSelectedVertex(0,1)">↓</button>
-            <button type="button" onclick="selectNextVertex()">›</button>
+            <div class="zoom-controls" aria-label="Canvas zoom controls">
+                <button type="button" onclick="zoomOut()" aria-label="Zoom out">âˆ’</button>
+                <button type="button" class="zoom-level" id="zoom-level">100%</button>
+                <button type="button" onclick="zoomIn()" aria-label="Zoom in">+</button>
+                <button type="button" onclick="resetZoom()" aria-label="Reset zoom">â†º</button>
+            </div>
+            <div class="vertex-controls" id="vertex-controls">
+                <button type="button" onclick="selectPreviousVertex()">â€¹</button>
+                <div class="vertex-index" id="vertex-index">Vertex 1</div>
+                <button type="button" onclick="nudgeSelectedVertex(0,-1)">â†‘</button>
+                <button type="button" onclick="nudgeSelectedVertex(-1,0)">â†</button>
+                <button type="button" onclick="nudgeSelectedVertex(1,0)">â†’</button>
+                <button type="button" onclick="nudgeSelectedVertex(0,1)">â†“</button>
+                <button type="button" onclick="selectNextVertex()">â€º</button>
+            </div>
         </div>
         <div class="status-bar" id="status-text">Ready</div>
     </div>
@@ -631,6 +297,7 @@
 
     <script>
         const canvas = document.getElementById('outlookCanvas');
+        const canvasWrapper = document.getElementById('canvas-wrapper');
         const ctx = canvas.getContext('2d');
         const statusText = document.getElementById('status-text');
         const customRiskModal = document.getElementById('customRiskModal');
@@ -679,8 +346,13 @@
             selectedShapeIndex: -1,
             selectedPointIndex: -1,
             zoom: 1,
+            baseScale: 1,
+            panX: 0,
+            panY: 0,
             drawQueued: false,
-            lastPointer: null
+            lastPointer: null,
+            activePointers: new Map(),
+            gesture: null
         };
         appState.sortedShapes = appState.shapes;
 
@@ -692,6 +364,7 @@
 
             appState.backgroundImage.onload = function() {
                 resizeCanvasToImage();
+                fitCanvasToViewport();
                 requestDraw();
                 updateStatus("Base map loaded. Select a risk to draw.");
             };
@@ -702,6 +375,7 @@
                 canvas.height = 1200;
                 riskCanvas.width = 1600;
                 riskCanvas.height = 1200;
+                fitCanvasToViewport();
                 requestDraw();
             };
 
@@ -710,6 +384,8 @@
             updateHatchingButton();
             setMode('draw');
             updateZoomUI();
+            window.addEventListener('resize', fitCanvasToViewport, { passive: true });
+            window.visualViewport?.addEventListener('resize', fitCanvasToViewport, { passive: true });
         };
 
         function resizeCanvasToImage() {
@@ -718,6 +394,7 @@
                 canvas.height = appState.backgroundImage.naturalHeight;
                 riskCanvas.width = canvas.width;
                 riskCanvas.height = canvas.height;
+                fitCanvasToViewport();
             }
         }
 
@@ -726,6 +403,7 @@
             highlightRiskBtn(type);
             updateStatus(`Drawing Risk: ${appState.currentRisk.type}`);
             setMode('draw');
+            if (window.innerWidth <= 850) closeControlsPanel();
         }
 
         function openCustomRiskDialog() {
@@ -771,7 +449,7 @@
             highlightRiskBtn(null);
             closeCustomRiskDialog();
             setMode('draw');
-            updateStatus(`Custom draw set: ${type} · text darkness ${textDarkness}%`);
+            updateStatus(`Custom draw set: ${type} Â· text darkness ${textDarkness}%`);
         }
 
         function getDarkColor(hex, darkness) {
@@ -794,7 +472,7 @@
         function updateHatchingButton() {
             const btn = document.getElementById('btn-hatching');
             btn.classList.toggle('active-tool-white', appState.isHatchingEnabled);
-            btn.textContent = appState.isHatchingEnabled ? '▤ CIG Hatching (ON)' : '▤ CIG Hatching (OFF)';
+            btn.textContent = appState.isHatchingEnabled ? 'â–¤ CIG Hatching (ON)' : 'â–¤ CIG Hatching (OFF)';
         }
 
         function setMode(mode) {
@@ -811,6 +489,7 @@
                 document.getElementById('btn-edit').classList.remove('active-tool');
                 updateStatus(`Draw Mode: ${appState.currentRisk.type}`);
             }
+            updateVertexControls();
             requestDraw();
         }
 
@@ -823,7 +502,7 @@
         function updateAutoBufferButton() {
             const btn = document.getElementById('btn-auto-buffer');
             btn.classList.toggle('active-tool-white', appState.isAutoBufferEnabled);
-            btn.textContent = appState.isAutoBufferEnabled ? '🔗 Auto-Buffer (ON)' : '🔗 Auto-Buffer (OFF)';
+            btn.textContent = appState.isAutoBufferEnabled ? 'ðŸ”— Auto-Buffer (ON)' : 'ðŸ”— Auto-Buffer (OFF)';
         }
 
         function toggleEditMode() {
@@ -1004,25 +683,67 @@
             });
         }
 
+        function fitCanvasToViewport() {
+            const rect = canvasWrapper.getBoundingClientRect();
+            if (!rect.width || !rect.height || !canvas.width || !canvas.height) return;
+            const availableWidth = Math.max(40, rect.width - 22);
+            const availableHeight = Math.max(40, rect.height - 22);
+            appState.baseScale = Math.min(availableWidth / canvas.width, availableHeight / canvas.height);
+            appState.baseScale = Math.max(.01, appState.baseScale);
+            clampPan();
+            updateZoomUI();
+        }
+
+        function clampPan() {
+            const rect = canvasWrapper.getBoundingClientRect();
+            const scaledWidth = canvas.width * appState.baseScale * appState.zoom;
+            const scaledHeight = canvas.height * appState.baseScale * appState.zoom;
+            const maxX = Math.max(0, (scaledWidth - rect.width) / 2 + 90);
+            const maxY = Math.max(0, (scaledHeight - rect.height) / 2 + 90);
+            appState.panX = Math.max(-maxX, Math.min(maxX, appState.panX));
+            appState.panY = Math.max(-maxY, Math.min(maxY, appState.panY));
+        }
+
         function updateZoomUI() {
             const percent = Math.round(appState.zoom * 100);
             zoomLevel.textContent = `${percent}%`;
-            canvas.style.transform = `scale(${appState.zoom})`;
+            const width = canvas.width * appState.baseScale * appState.zoom;
+            const height = canvas.height * appState.baseScale * appState.zoom;
+            canvas.style.width = `${width}px`;
+            canvas.style.height = `${height}px`;
+            canvas.style.transform = `translate(calc(-50% + ${appState.panX}px), calc(-50% + ${appState.panY}px))`;
         }
 
-        function zoomIn() {
-            appState.zoom = Math.min(3, +(appState.zoom + .25).toFixed(2));
+        function setZoom(nextZoom, focusX = null, focusY = null) {
+            const oldZoom = appState.zoom;
+            const next = Math.max(.35, Math.min(6, +nextZoom.toFixed(2)));
+            if (next === oldZoom) return;
+
+            if (focusX !== null && focusY !== null) {
+                const rect = canvasWrapper.getBoundingClientRect();
+                const cx = rect.left + rect.width / 2;
+                const cy = rect.top + rect.height / 2;
+                const worldX = (focusX - cx - appState.panX) / (appState.baseScale * oldZoom);
+                const worldY = (focusY - cy - appState.panY) / (appState.baseScale * oldZoom);
+                appState.zoom = next;
+                appState.panX = focusX - cx - worldX * appState.baseScale * next;
+                appState.panY = focusY - cy - worldY * appState.baseScale * next;
+            } else {
+                appState.zoom = next;
+            }
+            clampPan();
             updateZoomUI();
+            requestDraw();
         }
 
-        function zoomOut() {
-            appState.zoom = Math.max(.5, +(appState.zoom - .25).toFixed(2));
-            updateZoomUI();
-        }
-
+        function zoomIn() { setZoom(appState.zoom + .25); }
+        function zoomOut() { setZoom(appState.zoom - .25); }
         function resetZoom() {
             appState.zoom = 1;
+            appState.panX = 0;
+            appState.panY = 0;
             updateZoomUI();
+            requestDraw();
         }
 
         function render(mouseX, mouseY) {
@@ -1255,11 +976,59 @@
             }
         }
 
+        function getGesturePoints() {
+            return [...appState.activePointers.values()];
+        }
+
+        function distanceBetween(a, b) { return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY); }
+        function midpoint(a, b) { return { x: (a.clientX + b.clientX) / 2, y: (a.clientY + b.clientY) / 2 }; }
+
+        function beginGesture() {
+            const pts = getGesturePoints();
+            if (pts.length < 2) return;
+            const [a, b] = pts;
+            const center = midpoint(a, b);
+            appState.gesture = {
+                startDistance: Math.max(1, distanceBetween(a, b)),
+                startZoom: appState.zoom,
+                startPanX: appState.panX,
+                startPanY: appState.panY,
+                startCenter: center
+            };
+            appState.drag.isDragging = false;
+        }
+
+        function handleGesture() {
+            const pts = getGesturePoints();
+            if (pts.length < 2 || !appState.gesture) return;
+            const [a, b] = pts;
+            const center = midpoint(a, b);
+            const scale = distanceBetween(a, b) / appState.gesture.startDistance;
+            const nextZoom = Math.max(.35, Math.min(6, appState.gesture.startZoom * scale));
+            const rect = canvasWrapper.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            const startWorldX = (appState.gesture.startCenter.x - cx - appState.gesture.startPanX) / (appState.baseScale * appState.gesture.startZoom);
+            const startWorldY = (appState.gesture.startCenter.y - cy - appState.gesture.startPanY) / (appState.baseScale * appState.gesture.startZoom);
+            appState.zoom = nextZoom;
+            appState.panX = center.x - cx - startWorldX * appState.baseScale * nextZoom;
+            appState.panY = center.y - cy - startWorldY * appState.baseScale * nextZoom;
+            clampPan();
+            updateZoomUI();
+            requestDraw();
+        }
+
         canvas.addEventListener('pointerdown', (e) => {
             e.preventDefault();
+            appState.activePointers.set(e.pointerId, { clientX: e.clientX, clientY: e.clientY });
             canvas.setPointerCapture?.(e.pointerId);
-            const { x, y } = getPointerPos(e);
 
+            if (appState.activePointers.size >= 2) {
+                beginGesture();
+                return;
+            }
+
+            const { x, y } = getPointerPos(e);
             if (appState.mode === 'edit') {
                 beginEditAt(x, y);
                 return;
@@ -1270,22 +1039,32 @@
                 return;
             }
             appState.currentPoints.push({ x, y });
+            appState.lastPointer = { x, y };
             requestDraw();
         }, { passive: false });
 
         canvas.addEventListener('pointermove', (e) => {
             e.preventDefault();
+            if (appState.activePointers.has(e.pointerId)) {
+                appState.activePointers.set(e.pointerId, { clientX: e.clientX, clientY: e.clientY });
+            }
+            if (appState.activePointers.size >= 2) {
+                handleGesture();
+                return;
+            }
             const { x, y } = getPointerPos(e);
             movePointer(x, y);
         }, { passive: false });
 
-        canvas.addEventListener('pointerup', (e) => {
-            e.preventDefault();
+        function finishPointer(e) {
+            appState.activePointers.delete(e.pointerId);
             canvas.releasePointerCapture?.(e.pointerId);
+            if (appState.activePointers.size < 2) appState.gesture = null;
             endPointer();
-        }, { passive: false });
+        }
 
-        canvas.addEventListener('pointercancel', endPointer);
+        canvas.addEventListener('pointerup', finishPointer, { passive: false });
+        canvas.addEventListener('pointercancel', finishPointer, { passive: false });
 
         canvas.addEventListener('dblclick', (e) => {
             e.preventDefault();
@@ -1295,12 +1074,12 @@
         canvas.addEventListener('contextmenu', e => e.preventDefault());
 
         function getPointerPos(evt) {
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / (rect.width / appState.zoom);
-            const scaleY = canvas.height / (rect.height / appState.zoom);
+            const rect = canvasWrapper.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
             return {
-                x: (evt.clientX - rect.left) * scaleX / appState.zoom,
-                y: (evt.clientY - rect.top) * scaleY / appState.zoom
+                x: (evt.clientX - cx - appState.panX) / (appState.baseScale * appState.zoom) + canvas.width / 2,
+                y: (evt.clientY - cy - appState.panY) / (appState.baseScale * appState.zoom) + canvas.height / 2
             };
         }
 
@@ -1403,6 +1182,7 @@
                 if (appState.selectedShapeIndex !== -1) {
                     appState.shapes.splice(appState.selectedShapeIndex, 1);
                     deselectShape();
+                    requestDraw();
                     updateStatus("Selected polygon removed.");
                 } else {
                     appState.shapes.pop();
@@ -1436,7 +1216,7 @@
             const prevSelected = appState.selectedShapeIndex;
             appState.mode = 'preview';
             appState.selectedShapeIndex = -1;
-            requestDraw();
+            render();
 
             const link = document.createElement('a');
             link.download = 'spc_outlook_forecast.png';
@@ -1457,9 +1237,21 @@
             }
         }
 
+        function toggleControlsPanel() {
+            const panel = document.getElementById('controls-panel');
+            const backdrop = document.getElementById('drawer-backdrop');
+            panel.classList.toggle('open');
+            backdrop.classList.toggle('visible', panel.classList.contains('open'));
+        }
+
+        function closeControlsPanel() {
+            document.getElementById('controls-panel').classList.remove('open');
+            document.getElementById('drawer-backdrop').classList.remove('visible');
+        }
+
         function updateStatus(msg) {
             statusText.textContent = msg;
         }
     </script>
 </body>
-    </html>
+            </html>
